@@ -32,7 +32,7 @@ class TriangleBase(TriangleIO, TriangleDisplay, TriangleSlicer,
         m_cnt = {'Y': 12, 'Q': 3, 'M': 1}
         if development:
             development_date = TriangleBase.to_datetime(
-                data_agg, development, period_end=True,
+                data_agg, development, period_end=False,
                 format=development_format)
             self.development_grain = TriangleBase._get_grain(development_date)
             col = 'development'
