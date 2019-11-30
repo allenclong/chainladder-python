@@ -32,7 +32,7 @@ class TriangleBase(TriangleIO, TriangleDisplay, TriangleSlicer,
         m_cnt = {'Y': 12, 'Q': 3, 'M': 1}
         if development:
             development_date = TriangleBase.to_datetime(
-                data_agg, development, period_end=False,
+                data_agg, development, period_end=True,
                 format=development_format)
             self.development_grain = TriangleBase._get_grain(development_date)
             col = 'development'
@@ -264,7 +264,7 @@ class TriangleBase(TriangleIO, TriangleDisplay, TriangleSlicer,
         else:
             array_lookup = len(set(array.month))
         offset = {12: pd.tseries.offsets.MonthEnd(),
-                  4: pd.tseries.offsets.QuarterEnd(),
+                  4: pd.tseries.offsets.QuarterEnd(0),
                   1: pd.tseries.offsets.YearEnd()}
         return array + offset[array_lookup]
 
