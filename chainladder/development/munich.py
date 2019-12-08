@@ -104,7 +104,9 @@ class MunichAdjustment(BaseEstimator, TransformerMixin, EstimatorIO):
         p_to_i_sigma = np.unique(p_to_i_sigma, axis=-2)  # May cause issues
         print(p_to_i_sigma.shape)
         print(paid.shape)
-        if paid.shape[2] == paid.shape[3] or (4*paid.shape[2]) == paid.shape[3]+1:
+        print(paid.shape[2])
+        print(paid.shape[3])
+        if paid.shape[2] == paid.shape[3] or (4*paid.shape[2]) == paid.shape[3]-3:
             residualP = (p_to_i_ata[0]-p_to_i_ldf[0]) / \
                 p_to_i_sigma[0]*np.sqrt(paid[..., :-1, :-1]) 
             residualI = (p_to_i_ata[1]-p_to_i_ldf[1]) / \
