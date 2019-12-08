@@ -1,11 +1,15 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 from setuptools import setup, find_packages
 from os import listdir
 # import chainladder
 
 descr = "Chainladder Package - P&C Loss Reserving package "
 name = 'chainladder'
-url = 'https://github.com/jbogaardt/chainladder-python'
-version='0.4.2' # Put this in __init__.py
+url = 'https://github.com/casact/chainladder-python'
+version='0.4.4' # Put this in __init__.py
 
 data_path = ''
 setup(
