@@ -104,14 +104,14 @@ class MunichAdjustment(BaseEstimator, TransformerMixin, EstimatorIO):
         p_to_i_sigma = np.unique(p_to_i_sigma, axis=-2)  # May cause issues
         if p_to_i_sigma.shape[2] == p_to_i_sigma.shape[3] or (4*p_to_i_sigma.shape[2]) == p_to_i_sigma.shape[3]+1:
             residualP = (p_to_i_ata[0]-p_to_i_ldf[0]) / \
-                p_to_i_sigma[0]*np.sqrt(paid[..., :-1]) # remove  :-1,
-            residualI = (p_to_i_ata[1]-p_to_i_ldf[1]) / \
-                p_to_i_sigma[1]*np.sqrt(incurred[..., :-1])
-        else:
-            residualP = (p_to_i_ata[0]-p_to_i_ldf[0]) / \
-                p_to_i_sigma[0]*np.sqrt(paid[...,:-1, :-1])
+                p_to_i_sigma[0]*np.sqrt(paid[..., :-1, :-1]) # remove  :-1,
             residualI = (p_to_i_ata[1]-p_to_i_ldf[1]) / \
                 p_to_i_sigma[1]*np.sqrt(incurred[..., :-1, :-1])
+        else:
+            residualP = (p_to_i_ata[0]-p_to_i_ldf[0]) / \
+                p_to_i_sigma[0]*np.sqrt(paid[...,:-1])
+            residualI = (p_to_i_ata[1]-p_to_i_ldf[1]) / \
+                p_to_i_sigma[1]*np.sqrt(incurred[..., :-1])
             
         nans = (X-X[X.valuation == X.valuation_date]).values[0, 0]*0+1
         q_resid = (paid/incurred - self.q_f_[1]) / \
