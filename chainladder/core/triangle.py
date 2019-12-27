@@ -88,6 +88,24 @@ class Triangle(TriangleBase):
     def index(self):
         return pd.DataFrame(list(self.kdims), columns=self.key_labels)
 
+    @index.setter
+    def index(self, value):
+        self._len_check(self.index, value)
+        if type(value) is pd.DataFrame:
+            self.kdims = value.values
+            self._set_slicers()
+        else:
+            raise TypeError('index must be a pandas DataFrame')
+
+    def set_index(self, value, inplace=False):
+        """ Sets the index of the Triangle """
+        if inplace:
+            self.index = value
+            return self
+        else:
+            new_obj = copy.deepcopy(self)
+            return new_obj.set_index(value=value, inplace=True)
+
     @property
     def columns(self):
         return self._idx_table().columns
@@ -330,17 +348,11 @@ class Triangle(TriangleBase):
             o_vals = np.append(o_vals, arr, -1)
         obj.values = o_vals[..., 1:]
         obj.values[obj.values == 0] = np.nan
-        keep = np.where(np.sum(
-            (np.nansum(np.nansum(obj.values, 0), 0)), -2) !=
-            len(obj.origin))[-1]
-        obj.values = obj.values[..., keep]
         if kind == 'val_to_dev':
             obj.ddims = np.array([item for item in rng])
-            obj.ddims = obj.ddims[keep]
             obj.valuation = obj._valuation_triangle()
         else:
             obj.ddims = obj.valuation.unique().sort_values()
-            obj.ddims = obj.ddims[keep]
             obj.values = obj.values[..., :np.where(
                 obj.ddims.to_timestamp() <= obj.valuation_date)[0].max()+1]
             obj.ddims = obj.ddims[obj.ddims.to_timestamp()

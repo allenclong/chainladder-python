@@ -4,8 +4,6 @@
 import pandas as pd
 import numpy as np
 import copy
-import inspect
-
 
 
 class TriangleGroupBy:
@@ -100,12 +98,14 @@ class TrianglePandas:
         odim = list(obj.sum(axis=-1).values[0, 0, :, 0]*0+1)
         min_odim = obj.origin[odim.index(1)]
         max_odim = obj.origin[::-1][odim[::-1].index(1)]
-        ddim = np.nan_to_num((obj.sum(axis=-2).values*0+1)[0, 0, 0])
-        ddim = obj.development.iloc[:, 0][pd.Series(ddim).astype(bool)]
-        obj = self[(self.origin >= min_odim) & (self.origin <= max_odim)]
-        obj = obj[(self.development >= ddim.min()) &
+        if obj.shape[-1] != 1:
+            ddim = np.nan_to_num((obj.sum(axis=-2).values*0+1)[0, 0, 0])
+            ddim = obj.development.iloc[:, 0][pd.Series(ddim).astype(bool)]
+            obj = obj[(self.development >= ddim.min()) &
                   (self.development <= ddim.max())]
+        obj = self[(self.origin >= min_odim) & (self.origin <= max_odim)]
         return obj
+
 
     @property
     def T(self):
@@ -133,27 +133,28 @@ class TrianglePandas:
             return self.to_frame().groupby(*args, **kwargs)
         return TriangleGroupBy(self, by)
 
-    def append(self, other, index):
+    def append(self, other):
         """ Append rows of other to the end of caller, returning a new object.
 
         Parameters
         ----------
         other : Triangle
             The data to append.
-        index:
-            The index label(s) to assign the appended data.
 
         Returns
         -------
             New Triangle with appended data.
         """
         return_obj = copy.deepcopy(self)
-        x = pd.DataFrame(list(return_obj.kdims), columns=return_obj.key_labels)
-        new_idx = pd.DataFrame([index], columns=return_obj.key_labels)
-        x = x.append(new_idx, sort=True)
-        x.set_index(return_obj.key_labels, inplace=True)
-        return_obj.values = np.append(return_obj.values, other.values, axis=0)
-        return_obj.kdims = np.array(x.index.unique())
+        return_obj.kdims = (return_obj.index.append(other.index)).values
+        try:
+            return_obj.values = np.append(return_obj.values, other.values, axis=0)
+        except:
+            # For misaligned triangle support
+            self.values = np.append(
+                return_obj.values,
+                (return_obj.iloc[:, 0]*0+other.values).values, axis=1)
+
         return_obj._set_slicers()
         return return_obj
 
@@ -213,12 +214,8 @@ def add_triangle_agg_func(cls, k, v):
             else:
                 axis = self._get_axis(axis)
             func = getattr(np, v)
-            if 'keepdims' in inspect.getfullargspec(func).args:
-                obj.values = func(
-                    obj.values, axis=axis, keepdims=True, *args, **kwargs)
-            else:
-                obj.values = func(
-                    obj.values, axis=axis, *args, **kwargs)
+            kwargs.update({'keepdims': True})
+            obj.values = func(obj.values, axis=axis, *args, **kwargs)
             if axis == 0 and obj.values.shape[axis] == 1:
                 obj.kdims = np.array([None])
                 obj.key_labels = [None]
@@ -273,7 +270,7 @@ def set_method(cls, func, k):
 
 df_passthru = ['to_clipboard', 'to_csv', 'to_excel', 'to_json',
                'to_html', 'to_dict', 'unstack', 'pivot', 'drop_duplicates',
-               'describe', 'melt', 'pct_chg']
+               'describe', 'melt', 'pct_chg', 'round']
 agg_funcs = ['sum', 'mean', 'median', 'max', 'min', 'prod',
              'var', 'std', 'cumsum']
 agg_funcs = {item: 'nan'+item for item in agg_funcs}
